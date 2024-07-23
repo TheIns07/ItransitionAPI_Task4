@@ -1,0 +1,53 @@
+﻿@page "/"
+@using Frontend.Client.Services
+@using Frontend.Client.DTO;
+@inject DataService DataService
+
+<PageTitle>Index</PageTitle>
+
+<h1>Hello, world!</h1>
+@inject DataService DataService
+
+<h3>Usuarios</h3>
+
+@if (users == null)
+{
+    <p><em>Cargando...</em></p>
+}
+else if (!users.Any())
+{
+    <p>No se encontraron usuarios.</p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Id</th>
+                <th>Email</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in users)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.Email</td>
+                    <td>@user.Status</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private List<UserDTO> users;
+
+    protected override async Task OnInitializedAsync()
+    {
+        users = await DataService.GetAllUsersAsync();
+    }
+}
+
+<SurveyPrompt Title="How is Blazor working for you?" />

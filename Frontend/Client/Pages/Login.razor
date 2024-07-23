@@ -1,0 +1,120 @@
+﻿@page "/fetchdata"
+@using Frontend.Shared
+@inject HttpClient Http
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Weather forecast</h1>
+
+<p>This component demonstrates fetching data from the server.</p>
+
+@page "/login"
+@inject NavigationManager NavigationManager
+@inject HttpClient HttpClient
+
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Login</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@loginModel" OnValidSubmit="HandleLogin">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label for="email">Email address</label>
+                            <InputText type="email" id="email" class="form-control" @bind-Value="loginModel.Email" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password</label>
+                            <InputText type="password" id="password" class="form-control" @bind-Value="loginModel.Password" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mt-5">
+        <div class="col-md-6 offset-md-3">
+            <div class="card">
+                <div class="card-header">
+                    <h3>Sign In</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="@signInModel" OnValidSubmit="HandleSignIn">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+
+                        <div class="form-group">
+                            <label for="signInEmail">Email address</label>
+                            <InputText type="email" id="signInEmail" class="form-control" @bind-Value="signInModel.Email" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="signInPassword">Password</label>
+                            <InputText type="password" id="signInPassword" class="form-control" @bind-Value="signInModel.Password" required />
+                        </div>
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password</label>
+                            <InputText type="password" id="confirmPassword" class="form-control" @bind-Value="signInModel.ConfirmPassword" required />
+                        </div>
+                        <button type="submit" class="btn btn-primary">Sign In</button>
+                    </EditForm>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private LoginModel loginModel = new LoginModel();
+    private SignInModel signInModel = new SignInModel();
+
+    private async Task HandleLogin()
+    {
+        // Aquí puedes manejar el inicio de sesión
+        var response = await HttpClient.PostAsJsonAsync("api/auth/login", loginModel);
+        if (response.IsSuccessStatusCode)
+        {
+            // Redirigir a la página principal o mostrar un mensaje de éxito
+            NavigationManager.NavigateTo("/");
+        }
+        else
+        {
+            // Manejar errores
+        }
+    }
+
+    private async Task HandleSignIn()
+    {
+        // Aquí puedes manejar el registro
+        var response = await HttpClient.PostAsJsonAsync("api/auth/signup", signInModel);
+        if (response.IsSuccessStatusCode)
+        {
+            // Redirigir a la página de inicio de sesión o mostrar un mensaje de éxito
+            NavigationManager.NavigateTo("/login");
+        }
+        else
+        {
+            // Manejar errores
+        }
+    }
+
+    public class LoginModel
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
+    public class SignInModel
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+        public string ConfirmPassword { get; set; }
+    }
+}
+
