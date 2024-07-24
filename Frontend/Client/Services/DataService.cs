@@ -15,7 +15,7 @@ namespace Frontend.Client.Services
 
         public async Task<UserDTO> GetUserByIdAsync(int id)
         {
-            var response = await _httpClient.GetAsync($"api/users/{id}");
+            var response = await _httpClient.GetAsync($"api/user/{id}");
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<UserDTO>();
         }
@@ -24,7 +24,7 @@ namespace Frontend.Client.Services
         {
             try
             {
-                return await _httpClient.GetFromJsonAsync<List<UserDTO>>("api/users");
+                return await _httpClient.GetFromJsonAsync<List<UserDTO>>("api/user");
             }
             catch (HttpRequestException ex)
             {
@@ -43,40 +43,49 @@ namespace Frontend.Client.Services
             }
         }
 
-        // Add a new user
         public async Task<UserDTO> AddUserAsync(UserDTO user)
         {
-            var response = await _httpClient.PostAsJsonAsync("api/users", user);
+            var response = await _httpClient.PostAsJsonAsync("api/user", user);
             response.EnsureSuccessStatusCode();
             return await response.Content.ReadFromJsonAsync<UserDTO>();
         }
 
-        // Update a user
-        public async Task UpdateUserAsync(int id, UserDTO user)
+        public async Task UpdateUserAsync(List<int> ids, UserDTO user)
         {
-            var response = await _httpClient.PutAsJsonAsync($"api/users/{id}", user);
-            response.EnsureSuccessStatusCode();
+            foreach (var id in ids)
+            {
+                var response = await _httpClient.PutAsJsonAsync($"api/user/{id}", user);
+                response.EnsureSuccessStatusCode();
+            }
         }
 
-        // Delete a user
-        public async Task DeleteUserAsync(int id)
+        public async Task DeleteUserAsync(List<int> idUsers)
         {
-            var response = await _httpClient.DeleteAsync($"api/users/{id}");
-            response.EnsureSuccessStatusCode();
+            foreach(var id in idUsers)
+            {
+                var response = await _httpClient.DeleteAsync($"api/user/{id}");
+                response.EnsureSuccessStatusCode();
+            } 
         }
 
         // Update user status to Blocked
-        public async Task UpdateUserStatusBlockedAsync(int id)
+        public async Task UpdateUserStatusBlockedAsync(List<int> idUsers)
         {
-            var response = await _httpClient.PatchAsync($"api/users/{id}/statusblocked", null);
-            response.EnsureSuccessStatusCode();
+            foreach (var id in idUsers)
+            {
+                var response = await _httpClient.PatchAsync($"api/user/{id}/statusblocked", null);
+                response.EnsureSuccessStatusCode();
+            }
         }
 
         // Update user status to Active
-        public async Task UpdateUserStatusUnBlockedAsync(int id)
+        public async Task UpdateUserStatusUnBlockedAsync(List<int> idUsers)
         {
-            var response = await _httpClient.PatchAsync($"api/users/{id}/statusunblocked", null);
-            response.EnsureSuccessStatusCode();
+            foreach (var id in idUsers)
+            {
+                var response = await _httpClient.PatchAsync($"api/user/{id}/statusunblocked", null);
+                response.EnsureSuccessStatusCode();
+            }
         }
     }
 }

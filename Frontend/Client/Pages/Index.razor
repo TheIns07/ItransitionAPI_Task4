@@ -1,14 +1,21 @@
 ﻿@page "/"
+@page "/index"
 @using Frontend.Client.Services
 @using Frontend.Client.DTO;
 @inject DataService DataService
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, world!</h1>
+<h1>Hello, Manuel!</h1>
 @inject DataService DataService
 
-<h3>Usuarios</h3>
+<h3>Users</h3>
+
+<div class="mb-3">
+    <button class="btn btn-danger" @onclick="BlockSelectedUsers">Bloquear</button>
+    <button class="btn btn-success" @onclick="UnblockSelectedUsers">Desbloquear</button>
+    <button class="btn btn-warning" @onclick="DeleteSelectedUsers">Eliminar</button>
+</div>
 
 @if (users == null)
 {
@@ -23,7 +30,8 @@ else
     <table class="table">
         <thead>
             <tr>
-                <th>Id</th>
+                <th><input type="checkbox" @onclick="SelectAllUsers" /></th>
+                <th>Nombre</th>
                 <th>Email</th>
                 <th>Status</th>
             </tr>
@@ -32,7 +40,8 @@ else
             @foreach (var user in users)
             {
                 <tr>
-                    <td>@user.Id</td>
+                    <td><input type="checkbox" @bind="user.IsSelected" /></td>
+                    <td>@user.Name</td>
                     <td>@user.Email</td>
                     <td>@user.Status</td>
                 </tr>
@@ -48,6 +57,45 @@ else
     {
         users = await DataService.GetAllUsersAsync();
     }
-}
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+    private void SelectAllUsers()
+    {
+        bool selectAll = !users.All(u => u.IsSelected);
+        foreach (var user in users)
+        {
+            user.IsSelected = selectAll;
+        }
+    }
+
+    private async Task BlockSelectedUsers()
+    {
+        var selectedUserIds = users.Where(u => u.IsSelected).Select(u => u.Id).ToList();
+        await DataService.UpdateUserStatusBlockedAsync(selectedUserIds);
+        await RefreshUsers();
+    }
+
+    private async Task UnblockSelectedUsers()
+    {
+        var selectedUserIds = users.Where(u => u.IsSelected).Select(u => u.Id).ToList();
+        await DataService.UpdateUserStatusUnBlockedAsync(selectedUserIds);
+        await RefreshUsers();
+    }
+
+    private async Task DeleteSelectedUsers()
+    {
+        var selectedUserIds = users.Where(u => u.IsSelected).Select(u => u.Id).ToList();
+        if (selectedUserIds.Any())
+        {
+            await DataService.DeleteUserAsync(selectedUserIds);
+            users = await DataService.GetAllUsersAsync();
+        }
+        await RefreshUsers();
+    }
+
+    private async Task RefreshUsers()
+    {
+        users = await DataService.GetAllUsersAsync();
+        StateHasChanged();
+    }
+
+}

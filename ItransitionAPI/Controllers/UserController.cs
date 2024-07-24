@@ -105,7 +105,7 @@ namespace ItransitionAPI.Controllers
             }
         }
 
-        [HttpPatch("{id}/statusUnblocked")]
+        [HttpPatch("{id}/statusunblocked")]
         public async Task<IActionResult> UpdateUserStatusUnBlocked(int id)
         {
             try
