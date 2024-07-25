@@ -1,9 +1,13 @@
 ﻿using ItransitionAPI.Data;
 using ItransitionAPI.Interfaces;
 using ItransitionAPI.Models;
-using ItransitionAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System.ComponentModel.DataAnnotations;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -14,10 +18,12 @@ namespace ItransitionAPI.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUserRepository _userInterface;
+        private readonly IConfiguration _configuration;
 
-        public UserController(IUserRepository userService)
+        public UserController(IUserRepository userService, IConfiguration configuration)
         {
             _userInterface = userService;
+            _configuration = configuration;
         }
 
         [HttpGet("{id}")]
@@ -163,7 +169,20 @@ namespace ItransitionAPI.Controllers
 
         private string GenerateJwtToken(User user)
         {
-            return "xxxxxxx";
+            var tokenHandler = new JwtSecurityTokenHandler();
+            var key = Encoding.ASCII.GetBytes(_configuration["Jwt:Key"]);
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = new ClaimsIdentity(new Claim[]
+                {
+                new Claim(ClaimTypes.Name, user.Id.ToString()),
+                new Claim("Status", user.Status)
+                }),
+                Expires = DateTime.UtcNow.AddHours(1),
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
+            };
+            var token = tokenHandler.CreateToken(tokenDescriptor);
+            return tokenHandler.WriteToken(token);
         }
     }
 }

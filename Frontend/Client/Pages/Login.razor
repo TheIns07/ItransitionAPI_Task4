@@ -1,13 +1,10 @@
-﻿@page "/login"
-
-@using Frontend.Shared
-@using Frontend.Client.Services;
-
-<PageTitle>Login or Sign Up</PageTitle>
-
-@inject NavigationManager NavigationManager
-@inject HttpClient HttpClient
+﻿@page "/"
+@page "/index"
+@using Frontend.Client.Services
+@using Microsoft.AspNetCore.Components.Authorization;
 @inject DataService DataService
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>Login</PageTitle>
 
@@ -42,8 +39,9 @@
         try
         {
             var token = await DataService.LoginAsync(loginModel.Email, loginModel.Password);
-            await DataService.MarkUserAsAuthenticated(token);
-            NavigationManager.NavigateTo("/main-menu");
+            var authStateProvider = (CustomAuthenticationStateProvider)AuthenticationStateProvider;
+            await authStateProvider.MarkUserAsAuthenticated(token);
+            NavigationManager.NavigateTo("/main");
         }
         catch (Exception ex)
         {
@@ -56,7 +54,5 @@
         public string Email { get; set; }
         public string Password { get; set; }
     }
+
 }
-
-
-

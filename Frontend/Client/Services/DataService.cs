@@ -8,35 +8,17 @@ using System.Security.Claims;
 
 namespace Frontend.Client.Services
 {
-    public class DataService : AuthenticationStateProvider
+    public class DataService
     {
         private readonly HttpClient _httpClient;
         private readonly ILocalStorageService _localStorageService;
-        private readonly AuthenticationState _anonymous;
-
 
         public DataService(HttpClient httpClient, ILocalStorageService localStorageService)
         {
             _httpClient = httpClient;
             _localStorageService = localStorageService;
-            _anonymous = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
-        public async Task MarkUserAsAuthenticated(string token)
-        {
-            await _localStorageService.SetItemAsync("authToken", token);
-            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
-            var identity = new ClaimsIdentity(jwt.Claims, "jwt");
-            var user = new ClaimsPrincipal(identity);
-
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
-        }
-
-        public async Task MarkUserAsLoggedOut()
-        {
-            await _localStorageService.RemoveItemAsync("authToken");
-            NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));
-        }
 
         public async Task<UserDTO> GetUserByIdAsync(int id)
         {
@@ -139,11 +121,6 @@ namespace Frontend.Client.Services
             var status = jwt.Claims.FirstOrDefault(c => c.Type == "status")?.Value;
 
             return status != "Blocked";
-        }
-
-        public override Task<AuthenticationState> GetAuthenticationStateAsync()
-        {
-            throw new NotImplementedException();
         }
 
         public class LoginDTO
