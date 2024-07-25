@@ -3,11 +3,11 @@
 @using Frontend.Client.Services
 @using Frontend.Client.DTO;
 @inject DataService DataService
+@inject NavigationManager NavigationManager
 
 <PageTitle>Index</PageTitle>
 
 <h1>Hello, Manuel!</h1>
-@inject DataService DataService
 
 <h3>Users</h3>
 
@@ -55,6 +55,11 @@ else
 
     protected override async Task OnInitializedAsync()
     {
+        if (!await DataService.IsUserAuthenticatedAndNotBlockedAsync())
+        {
+            NavigationManager.NavigateTo("/login");
+        }
+
         users = await DataService.GetAllUsersAsync();
     }
 

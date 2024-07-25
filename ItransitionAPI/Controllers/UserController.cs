@@ -1,5 +1,7 @@
-﻿using ItransitionAPI.Interfaces;
+﻿using ItransitionAPI.Data;
+using ItransitionAPI.Interfaces;
 using ItransitionAPI.Models;
+using ItransitionAPI.Repository;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.DataAnnotations;
 
@@ -139,6 +141,29 @@ namespace ItransitionAPI.Controllers
             {
                 return NotFound();
             }
+        }
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDTO loginDto)
+        {
+            var user = await _userInterface.GetUserByEmailAndPasswordAsync(loginDto.Email, loginDto.Password);
+            if (user == null || user.Password != loginDto.Password)
+            {
+                return Unauthorized("Invalid credentials.");
+            }
+
+            if (user.Status == "Blocked")
+            {
+                return Forbid("User is blocked.");
+            }
+            var token = GenerateJwtToken(user);
+
+            return Ok(new { Token = token });
+        }
+
+        private string GenerateJwtToken(User user)
+        {
+            return "xxxxxxx";
         }
     }
 }

@@ -1,16 +1,41 @@
 ﻿using System.Net.Http.Json;
 using System.Text.Json;
+using Blazored.LocalStorage;
 using Frontend.Client.DTO;
+using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Security.Claims;
 
 namespace Frontend.Client.Services
 {
-    public class DataService
+    public class DataService : AuthenticationStateProvider
     {
         private readonly HttpClient _httpClient;
+        private readonly ILocalStorageService _localStorageService;
+        private readonly AuthenticationState _anonymous;
 
-        public DataService(HttpClient httpClient)
+
+        public DataService(HttpClient httpClient, ILocalStorageService localStorageService)
         {
             _httpClient = httpClient;
+            _localStorageService = localStorageService;
+            _anonymous = new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
+        }
+
+        public async Task MarkUserAsAuthenticated(string token)
+        {
+            await _localStorageService.SetItemAsync("authToken", token);
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var identity = new ClaimsIdentity(jwt.Claims, "jwt");
+            var user = new ClaimsPrincipal(identity);
+
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(user)));
+        }
+
+        public async Task MarkUserAsLoggedOut()
+        {
+            await _localStorageService.RemoveItemAsync("authToken");
+            NotifyAuthenticationStateChanged(Task.FromResult(_anonymous));
         }
 
         public async Task<UserDTO> GetUserByIdAsync(int id)
@@ -68,7 +93,6 @@ namespace Frontend.Client.Services
             } 
         }
 
-        // Update user status to Blocked
         public async Task UpdateUserStatusBlockedAsync(List<int> idUsers)
         {
             foreach (var id in idUsers)
@@ -78,7 +102,6 @@ namespace Frontend.Client.Services
             }
         }
 
-        // Update user status to Active
         public async Task UpdateUserStatusUnBlockedAsync(List<int> idUsers)
         {
             foreach (var id in idUsers)
@@ -86,6 +109,52 @@ namespace Frontend.Client.Services
                 var response = await _httpClient.PatchAsync($"api/user/{id}/statusunblocked", null);
                 response.EnsureSuccessStatusCode();
             }
+        }
+
+        public async Task<string> LoginAsync(string email, string password)
+        {
+            var loginDto = new LoginDTO { Email = email, Password = password };
+            var response = await _httpClient.PostAsJsonAsync("api/user/login", loginDto);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
+                await _localStorageService.SetItemAsync("authToken", result.Token);
+                return result.Token;
+            }
+
+            var errorMessage = await response.Content.ReadAsStringAsync();
+            throw new Exception(errorMessage);
+        }
+
+        public async Task<bool> IsUserAuthenticatedAndNotBlockedAsync()
+        {
+            var token = await _localStorageService.GetItemAsync<string>("authToken");
+            if (string.IsNullOrEmpty(token))
+            {
+                return false;
+            }
+
+            var jwt = new JwtSecurityTokenHandler().ReadJwtToken(token);
+            var status = jwt.Claims.FirstOrDefault(c => c.Type == "status")?.Value;
+
+            return status != "Blocked";
+        }
+
+        public override Task<AuthenticationState> GetAuthenticationStateAsync()
+        {
+            throw new NotImplementedException();
+        }
+
+        public class LoginDTO
+        {
+            public string Email { get; set; }
+            public string Password { get; set; }
+        }
+
+        public class LoginResponseDTO
+        {
+            public string Token { get; set; }
         }
     }
 }

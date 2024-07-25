@@ -1,8 +1,10 @@
 ﻿using ItransitionAPI.Data;
 using ItransitionAPI.Interfaces;
 using ItransitionAPI.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
+using System.Net.Http;
 
 namespace ItransitionAPI.Repository
 {
@@ -99,5 +101,6 @@ namespace ItransitionAPI.Repository
         {
             return await _context.Users.FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
         }
+
     }
 }
