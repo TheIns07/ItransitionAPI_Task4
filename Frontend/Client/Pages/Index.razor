@@ -92,6 +92,11 @@ else
         }
     }
 
+    private async Task CreateUser()
+    {
+       //Code in here
+    }
+
     private async Task BlockSelectedUsers()
     {
         var selectedUserIds = users.Where(u => u.IsSelected).Select(u => u.Id).ToList();

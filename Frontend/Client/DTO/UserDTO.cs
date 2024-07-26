@@ -11,6 +11,7 @@ namespace Frontend.Client.DTO
         public DateTime LastLoginTime { get; set; }
         public DateTime RegistrationTime { get; set; }
         public string Status { get; set; }
+        public string Password { get; set; }
         public bool IsSelected { get; set; }
     }
 }

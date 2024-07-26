@@ -2,6 +2,7 @@
 @page "/"
 @using Frontend.Client.Services
 @using Microsoft.AspNetCore.Components.Authorization
+@using Frontend.Client.DTO;
 @inject DataService DataService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -25,13 +26,40 @@
     <button type="submit" class="btn btn-primary">Login</button>
 </EditForm>
 
+<h3>Register </h3>
+
 @if (!string.IsNullOrEmpty(errorMessage))
 {
     <div class="alert alert-danger">Blocked User</div>
 }
 
+<EditForm Model="@registerModel" OnValidSubmit="@HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="mb-3">
+        <label for="name">Name</label>
+        <InputText id="name" class="form-control" @bind-Value="registerModel.Name" />
+    </div>
+    <div class="mb-3">
+        <label for="registerEmail">Email</label>
+        <InputText id="registerEmail" class="form-control" @bind-Value="registerModel.Email" />
+    </div>
+    <div class="mb-3">
+        <label for="registerPassword">Password</label>
+        <InputText id="registerPassword" type="password" class="form-control" @bind-Value="registerModel.Password" />
+    </div>
+    <button type="submit" class="btn btn-primary">Register</button>
+</EditForm>
+
+
+
+
 @code {
     private LoginModel loginModel = new LoginModel();
+    private RegisterDTO registerModel = new RegisterDTO();
+
+    private string registerErrorMessage;
     private string errorMessage;
 
     private async Task HandleLogin()
@@ -49,9 +77,19 @@
         }
     }
 
-    public class LoginModel
+    private async Task HandleRegister()
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        try
+        {
+            await DataService.AddUserAsync(registerModel);
+            registerErrorMessage = "Registration successful. You can now log in.";
+            NavigationManager.NavigateTo("/main");
+        }
+        catch (Exception ex)
+        {
+            registerErrorMessage = ex.Message;
+        }
     }
+
+
 }

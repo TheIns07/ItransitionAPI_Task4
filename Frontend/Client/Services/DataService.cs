@@ -50,7 +50,7 @@ namespace Frontend.Client.Services
             }
         }
 
-        public async Task<UserDTO> AddUserAsync(UserDTO user)
+        public async Task<UserDTO> AddUserAsync(RegisterDTO user)
         {
             var response = await _httpClient.PostAsJsonAsync("api/user", user);
             response.EnsureSuccessStatusCode();
@@ -95,12 +95,12 @@ namespace Frontend.Client.Services
 
         public async Task<string> LoginAsync(string email, string password)
         {
-            var loginDto = new LoginDTO { Email = email, Password = password };
+            var loginDto = new LoginModel { Email = email, Password = password };
             var response = await _httpClient.PostAsJsonAsync("api/user/login", loginDto);
 
             if (response.IsSuccessStatusCode)
             {
-                var result = await response.Content.ReadFromJsonAsync<LoginResponseDTO>();
+                var result = await response.Content.ReadFromJsonAsync<LoginTokenResponse>();
                 await _localStorageService.SetItemAsync("authToken", result.Token);
                 return result.Token;
             }
@@ -123,15 +123,6 @@ namespace Frontend.Client.Services
             return status != "Blocked";
         }
 
-        public class LoginDTO
-        {
-            public string Email { get; set; }
-            public string Password { get; set; }
-        }
 
-        public class LoginResponseDTO
-        {
-            public string Token { get; set; }
-        }
     }
 }
