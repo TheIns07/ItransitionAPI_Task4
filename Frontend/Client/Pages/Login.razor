@@ -1,7 +1,7 @@
-﻿@page "/"
-@page "/index"
+﻿
+@page "/"
 @using Frontend.Client.Services
-@using Microsoft.AspNetCore.Components.Authorization;
+@using Microsoft.AspNetCore.Components.Authorization
 @inject DataService DataService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
@@ -27,7 +27,7 @@
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
-    <div class="alert alert-danger">@errorMessage</div>
+    <div class="alert alert-danger">Blocked User</div>
 }
 
 @code {
@@ -54,5 +54,4 @@
         public string Email { get; set; }
         public string Password { get; set; }
     }
-
 }

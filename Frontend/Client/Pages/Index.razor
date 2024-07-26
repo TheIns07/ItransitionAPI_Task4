@@ -7,57 +7,77 @@
 
 <PageTitle>Index</PageTitle>
 
-<h1>Hello, Manuel!</h1>
+<h1>Hello!</h1>
 
 <h3>Users</h3>
 
 <div class="mb-3">
-    <button class="btn btn-danger" @onclick="BlockSelectedUsers">Bloquear</button>
-    <button class="btn btn-success" @onclick="UnblockSelectedUsers">Desbloquear</button>
-    <button class="btn btn-warning" @onclick="DeleteSelectedUsers">Eliminar</button>
+    <button class="btn btn-danger" @onclick="BlockSelectedUsers">Block</button>
+    <button class="btn btn-success" @onclick="UnblockSelectedUsers">Unblock</button>
+    <button class="btn btn-warning" @onclick="DeleteSelectedUsers">Delete</button>
 </div>
 
-@if (users == null)
+
+@if (isLoading)
 {
-    <p><em>Cargando...</em></p>
+    <p><em>Loading...</em></p>
 }
-else if (!users.Any())
+else if (!isAuthenticatedAndNotBlocked)
 {
-    <p>No se encontraron usuarios.</p>
+    <p><em>Redirecting...</em></p>
 }
 else
 {
-    <table class="table">
-        <thead>
-            <tr>
-                <th><input type="checkbox" @onclick="SelectAllUsers" /></th>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var user in users)
-            {
+    @if (users == null)
+    {
+        <p><em>Cargando...</em></p>
+    }
+    else if (!users.Any())
+    {
+        <p>No se encontraron usuarios.</p>
+    }
+    else
+    {
+        <table class="table">
+            <thead>
                 <tr>
-                    <td><input type="checkbox" @bind="user.IsSelected" /></td>
-                    <td>@user.Name</td>
-                    <td>@user.Email</td>
-                    <td>@user.Status</td>
+                    <th><input type="checkbox" @onclick="SelectAllUsers" /></th>
+                    <th>Nombre</th>
+                    <th>Email</th>
+                    <th>Status</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @foreach (var user in users)
+                {
+                    <tr>
+                        <td><input type="checkbox" @bind="user.IsSelected" /></td>
+                        <td>@user.Name</td>
+                        <td>@user.Email</td>
+                        <td>@user.Status</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    }
 }
+
+
+
 
 @code {
     private List<UserDTO> users;
+    private bool isLoading = true;
+    private bool isAuthenticatedAndNotBlocked;
 
     protected override async Task OnInitializedAsync()
     {
-        if (!await DataService.IsUserAuthenticatedAndNotBlockedAsync())
+        isAuthenticatedAndNotBlocked = await DataService.IsUserAuthenticatedAndNotBlockedAsync();
+        isLoading = false;
+
+        if (!isAuthenticatedAndNotBlocked)
         {
-            NavigationManager.NavigateTo("/login");
+            NavigationManager.NavigateTo("/");
         }
 
         users = await DataService.GetAllUsersAsync();
